@@ -22,6 +22,9 @@ enum AppTheme {
     label.font = .systemFont(ofSize: size, weight: weight)
     label.maximumNumberOfLines = 0
     label.lineBreakMode = .byWordWrapping
+    label.cell?.wraps = true
+    label.cell?.usesSingleLineMode = false
+    label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     return label
   }
 

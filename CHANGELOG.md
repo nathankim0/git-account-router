@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 — 2026-09-16
+
+- Keep every onboarding label within its card by applying explicit width constraints.
+- Allow long Korean and English descriptions to wrap instead of preserving an oversized intrinsic width.
+- Make requirement, account, and project cards consistently fill the available content width.
+
 ## 0.1.1 — 2026-09-16
 
 - Show the selected project's GitHub account in the macOS menu bar.

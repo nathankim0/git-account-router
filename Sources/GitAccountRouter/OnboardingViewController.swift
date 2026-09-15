@@ -38,6 +38,8 @@ final class OnboardingViewController: NSViewController {
     card.wantsLayer = true
     card.layer?.cornerRadius = 28
     card.layer?.masksToBounds = true
+    pageContainer.wantsLayer = true
+    pageContainer.layer?.masksToBounds = true
     card.addSubview(pageContainer)
     pageContainer.pinEdges(to: card, inset: 34)
 
@@ -143,7 +145,9 @@ final class OnboardingViewController: NSViewController {
     )
     body.alignment = .center
 
-    return centeredStack([icon, title, subtitle, body], spacing: 16)
+    let page = centeredStack([icon, title, subtitle, body], spacing: 16)
+    body.widthAnchor.constraint(lessThanOrEqualToConstant: 560).isActive = true
+    return page
   }
 
   private func requirementsPage() -> NSView {
@@ -163,7 +167,10 @@ final class OnboardingViewController: NSViewController {
     let note = AppTheme.secondaryLabel("누락된 도구를 설치한 뒤 앱을 다시 실행하세요.")
     note.textColor = .systemOrange
     note.isHidden = model.hasGit && model.hasGitHubCLI
-    return verticalStack([title, git, gh, note], spacing: 18)
+    let page = verticalStack([title, git, gh, note], spacing: 18)
+    git.widthAnchor.constraint(equalTo: page.widthAnchor).isActive = true
+    gh.widthAnchor.constraint(equalTo: page.widthAnchor).isActive = true
+    return page
   }
 
   private func accountsPage() -> NSView {
@@ -182,11 +189,17 @@ final class OnboardingViewController: NSViewController {
         accountStack.addArrangedSubview(accountRow(account))
       }
     }
+    for row in accountStack.arrangedSubviews {
+      row.translatesAutoresizingMaskIntoConstraints = false
+      row.widthAnchor.constraint(equalTo: accountStack.widthAnchor).isActive = true
+    }
 
     let addButton = AppTheme.button("다른 GitHub 계정 추가", target: self, action: #selector(addAccount))
     addButton.image = NSImage(systemSymbolName: "person.badge.plus", accessibilityDescription: nil)
     let refresh = AppTheme.button("인증 완료 후 새로고침", target: self, action: #selector(refresh))
-    return verticalStack([title, detail, accountStack, addButton, refresh], spacing: 16)
+    let page = verticalStack([title, detail, accountStack, addButton, refresh], spacing: 16)
+    accountStack.widthAnchor.constraint(equalTo: page.widthAnchor).isActive = true
+    return page
   }
 
   private func projectsPage() -> NSView {
@@ -206,11 +219,17 @@ final class OnboardingViewController: NSViewController {
     if model.projects.isEmpty {
       list.addArrangedSubview(AppTheme.secondaryLabel("아직 등록된 프로젝트가 없습니다."))
     }
+    for row in list.arrangedSubviews {
+      row.translatesAutoresizingMaskIntoConstraints = false
+      row.widthAnchor.constraint(equalTo: list.widthAnchor).isActive = true
+    }
 
     let addButton = AppTheme.button("프로젝트 폴더 선택", target: self, action: #selector(addProject))
     addButton.image = NSImage(systemSymbolName: "folder.badge.plus", accessibilityDescription: nil)
     let note = AppTheme.secondaryLabel("나중에 사이드바에서도 프로젝트를 계속 추가할 수 있습니다.", size: 12)
-    return verticalStack([title, detail, list, addButton, note], spacing: 16)
+    let page = verticalStack([title, detail, list, addButton, note], spacing: 16)
+    list.widthAnchor.constraint(equalTo: page.widthAnchor).isActive = true
+    return page
   }
 
   private func requirementRow(title: String, detail: String, installed: Bool, command: String)
@@ -232,6 +251,7 @@ final class OnboardingViewController: NSViewController {
     commandLabel.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
     commandLabel.isHidden = installed
     let text = verticalStack([heading, description, commandLabel], spacing: 4)
+    text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     let row = NSStackView(views: [symbol, text])
     row.orientation = .horizontal
     row.alignment = .top
@@ -250,6 +270,7 @@ final class OnboardingViewController: NSViewController {
     let label = AppTheme.label("@\(account.login)", size: 15, weight: .semibold)
     let state = AppTheme.secondaryLabel(account.active ? "GitHub CLI 활성 계정" : "로그인됨")
     let text = verticalStack([label, state], spacing: 2)
+    text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     let row = NSStackView(views: [icon, text])
     row.orientation = .horizontal
     row.spacing = 12
@@ -264,7 +285,11 @@ final class OnboardingViewController: NSViewController {
     stack.orientation = .vertical
     stack.alignment = .leading
     stack.spacing = spacing
-    stack.distribution = .gravityAreas
+    stack.distribution = .fill
+    for view in views {
+      view.translatesAutoresizingMaskIntoConstraints = false
+      view.widthAnchor.constraint(lessThanOrEqualTo: stack.widthAnchor).isActive = true
+    }
     return stack
   }
 
