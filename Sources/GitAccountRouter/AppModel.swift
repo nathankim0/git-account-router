@@ -10,9 +10,10 @@ final class AppModel {
   var selectedProjectID: UUID?
   private(set) var isBusy = false
 
-  var onChange: (() -> Void)?
   var onAlert: ((String, String) -> Void)?
   var onInitializationRequested: ((String) -> Void)?
+
+  private var changeObservers: [() -> Void] = []
 
   private let runner = ProcessCommandRunner()
   private let registry = ProjectRegistry()
@@ -30,6 +31,10 @@ final class AppModel {
 
   init() {
     configureServices()
+  }
+
+  func observeChanges(_ observer: @escaping () -> Void) {
+    changeObservers.append(observer)
   }
 
   func start() {
@@ -270,7 +275,9 @@ final class AppModel {
   }
 
   private func notify() {
-    onChange?()
+    for observer in changeObservers {
+      observer()
+    }
   }
 
   private func present(_ title: String, _ message: String) {

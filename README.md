@@ -23,7 +23,7 @@ The first public build is ad-hoc signed rather than Apple-notarized. On first la
 Requirements:
 
 - macOS 14 or newer
-- Apple Silicon (M1 or newer) for the downloadable `v0.1.0` build
+- Apple Silicon (M1 or newer) for the downloadable build
 - Git
 - [GitHub CLI](https://cli.github.com/) (`brew install gh`)
 
@@ -32,6 +32,8 @@ Requirements:
 - Register any existing Git repository from any folder.
 - Register a new folder and initialize it as a Git repository only after confirmation.
 - See the account, branch, origin, and routing state for every project.
+- See the selected project's GitHub account in the macOS menu bar and switch projects there.
+- Optionally start the app automatically when you log in to macOS.
 - Keep multiple GitHub CLI accounts authenticated at the same time.
 - Start GitHub's device authentication flow with the one-time code copied to the clipboard.
 - Route a repository through a dedicated Ed25519 key and SSH host alias.

@@ -23,7 +23,7 @@ final class OnboardingViewController: NSViewController {
     view = GradientBackgroundView()
     buildLayout()
     render()
-    model.onChange = { [weak self] in self?.render() }
+    model.observeChanges { [weak self] in self?.render() }
   }
 
   private func buildLayout() {

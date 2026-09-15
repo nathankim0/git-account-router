@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — 2026-09-16
+
+- Show the selected project's GitHub account in the macOS menu bar.
+- Add a menu-bar project picker, refresh action, settings shortcut, and window restore action.
+- Add a **Launch at Login** checkbox backed by macOS `SMAppService`.
+- Fix the main window collapsing to a one-pixel height after launch.
+- Keep the menu-bar app available when its main window is closed.
+
 ## 0.1.0 — 2026-09-16
 
 - Add native macOS onboarding and project registration.

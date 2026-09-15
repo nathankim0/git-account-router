@@ -6,6 +6,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   private let model = AppModel()
   private var window: NSWindow!
   private var rootController: NSViewController!
+  private var statusBarController: StatusBarController!
+  private var settingsWindowController: SettingsWindowController!
 
   static func main() {
     let app = NSApplication.shared
@@ -20,12 +22,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     configureMenu()
     configureModelCallbacks()
     showInitialInterface()
+    statusBarController = StatusBarController(
+      model: model,
+      showApplication: { [weak self] in self?.showApplicationWindow() },
+      showSettings: { [weak self] in self?.showSettings(nil) }
+    )
     model.start()
     NSApplication.shared.activate(ignoringOtherApps: true)
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-    true
+    false
+  }
+
+  func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool
+  {
+    showApplicationWindow()
+    return true
   }
 
   private func showInitialInterface() {
@@ -56,11 +69,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       )
       window.title = "Git Account Router"
       window.titlebarAppearsTransparent = true
-      window.center()
     }
-    window.setContentSize(size)
     window.contentViewController = controller
+    window.contentMinSize = NSSize(width: 760, height: 520)
+    window.setContentSize(size)
+    window.center()
     window.makeKeyAndOrderFront(nil)
+  }
+
+  private func showApplicationWindow() {
+    if window == nil {
+      showInitialInterface()
+    }
+    window.makeKeyAndOrderFront(nil)
+    NSApplication.shared.activate(ignoringOtherApps: true)
+  }
+
+  @objc func showSettings(_ sender: Any?) {
+    if settingsWindowController == nil {
+      settingsWindowController = SettingsWindowController()
+    }
+    settingsWindowController.showWindow(sender)
   }
 
   private func configureModelCallbacks() {
@@ -99,6 +128,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     appMenu.addItem(
       withTitle: "Git Account Router 정보",
       action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+    let settings = NSMenuItem(
+      title: "설정…", action: #selector(showSettings(_:)), keyEquivalent: ",")
+    settings.target = self
+    appMenu.addItem(settings)
     appMenu.addItem(.separator())
     appMenu.addItem(
       withTitle: "Git Account Router 종료", action: #selector(NSApplication.terminate(_:)),

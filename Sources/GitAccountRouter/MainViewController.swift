@@ -31,7 +31,7 @@ final class MainViewController: NSSplitViewController {
     detailItem.minimumThickness = 620
     addSplitViewItem(detailItem)
 
-    model.onChange = { [weak self] in self?.reload() }
+    model.observeChanges { [weak self] in self?.reload() }
     reload()
   }
 
@@ -117,7 +117,9 @@ private final class SidebarViewController: NSViewController, NSTableViewDataSour
       symbol: "person.badge.plus", tooltip: "GitHub 계정 추가", action: #selector(addAccount))
     let status = smallButton(
       symbol: "terminal", tooltip: "상태 도구 설치", action: #selector(installStatus))
-    let controls = NSStackView(views: [add, refresh, NSView(), account, status])
+    let settings = smallButton(
+      symbol: "gearshape", tooltip: "설정", action: #selector(openSettings))
+    let controls = NSStackView(views: [add, refresh, NSView(), account, status, settings])
     controls.orientation = .horizontal
     controls.spacing = 6
     controls.alignment = .centerY
@@ -206,4 +208,7 @@ private final class SidebarViewController: NSViewController, NSTableViewDataSour
   @objc private func refresh() { Task { await model.refreshAll() } }
   @objc private func addAccount() { model.launchDeviceLogin() }
   @objc private func installStatus() { model.installStatusHelper() }
+  @objc private func openSettings() {
+    NSApp.sendAction(#selector(AppDelegate.showSettings(_:)), to: nil, from: self)
+  }
 }
