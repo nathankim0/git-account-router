@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     )
     model.start()
     NSApplication.shared.activate(ignoringOtherApps: true)
+    captureLayoutSnapshotIfRequested()
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -138,5 +139,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       keyEquivalent: "q")
     appItem.submenu = appMenu
     NSApplication.shared.mainMenu = mainMenu
+  }
+
+  private func captureLayoutSnapshotIfRequested() {
+    #if DEBUG
+      guard let path = ProcessInfo.processInfo.environment["GAR_LAYOUT_SNAPSHOT"] else { return }
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+        guard let view = self?.window.contentView else { return }
+        view.layoutSubtreeIfNeeded()
+        guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        guard let data = bitmap.representation(using: .png, properties: [:]) else { return }
+        try? data.write(to: URL(fileURLWithPath: path))
+        NSApp.terminate(nil)
+      }
+    #endif
   }
 }

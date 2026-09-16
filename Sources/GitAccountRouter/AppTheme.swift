@@ -41,15 +41,49 @@ enum AppTheme {
     return button
   }
 
-  static func card() -> NSBox {
-    let box = NSBox()
-    box.boxType = .custom
-    box.cornerRadius = 16
-    box.borderWidth = 1
-    box.borderColor = .separatorColor.withAlphaComponent(0.55)
-    box.fillColor = .controlBackgroundColor.withAlphaComponent(0.78)
-    box.contentViewMargins = NSSize(width: 18, height: 18)
-    return box
+  static func card() -> CardView {
+    CardView()
+  }
+}
+
+@MainActor
+final class CardView: NSView {
+  var fillColor = NSColor.controlBackgroundColor.withAlphaComponent(0.78) {
+    didSet { needsDisplay = true }
+  }
+
+  var contentView: NSView? {
+    didSet {
+      oldValue?.removeFromSuperview()
+      guard let contentView else { return }
+      addSubview(contentView)
+      contentView.translatesAutoresizingMaskIntoConstraints = false
+      NSLayoutConstraint.activate([
+        contentView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 18),
+        contentView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -18),
+        contentView.topAnchor.constraint(equalTo: topAnchor, constant: 18),
+        contentView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -18),
+      ])
+    }
+  }
+
+  override init(frame frameRect: NSRect) {
+    super.init(frame: frameRect)
+    wantsLayer = true
+    layer?.cornerRadius = 16
+    layer?.borderWidth = 1
+  }
+
+  convenience init() {
+    self.init(frame: .zero)
+  }
+
+  @available(*, unavailable)
+  required init?(coder: NSCoder) { nil }
+
+  override func updateLayer() {
+    layer?.backgroundColor = fillColor.cgColor
+    layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.55).cgColor
   }
 }
 

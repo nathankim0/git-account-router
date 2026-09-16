@@ -13,6 +13,13 @@ final class OnboardingViewController: NSViewController {
   init(model: AppModel, onComplete: @escaping () -> Void) {
     self.model = model
     self.onComplete = onComplete
+    #if DEBUG
+      if let value = ProcessInfo.processInfo.environment["GAR_ONBOARDING_STEP"],
+        let requestedStep = Int(value)
+      {
+        step = min(max(requestedStep, 0), 3)
+      }
+    #endif
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -78,10 +85,13 @@ final class OnboardingViewController: NSViewController {
       outer.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 40),
       outer.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -40),
       card.widthAnchor.constraint(equalTo: outer.widthAnchor),
-      card.heightAnchor.constraint(equalToConstant: 470),
+      card.heightAnchor.constraint(equalToConstant: 500),
       controls.widthAnchor.constraint(equalTo: outer.widthAnchor),
       spacer.widthAnchor.constraint(greaterThanOrEqualToConstant: 300),
     ])
+    let preferredWidth = outer.widthAnchor.constraint(equalToConstant: 720)
+    preferredWidth.priority = .defaultHigh
+    preferredWidth.isActive = true
   }
 
   private func render() {
@@ -98,7 +108,15 @@ final class OnboardingViewController: NSViewController {
     default: page = projectsPage()
     }
     pageContainer.addSubview(page)
-    page.pinEdges(to: pageContainer)
+    page.translatesAutoresizingMaskIntoConstraints = false
+    page.setContentHuggingPriority(.required, for: .vertical)
+    page.setContentCompressionResistancePriority(.required, for: .vertical)
+    NSLayoutConstraint.activate([
+      page.leadingAnchor.constraint(equalTo: pageContainer.leadingAnchor),
+      page.trailingAnchor.constraint(equalTo: pageContainer.trailingAnchor),
+      page.topAnchor.constraint(equalTo: pageContainer.topAnchor),
+      page.bottomAnchor.constraint(lessThanOrEqualTo: pageContainer.bottomAnchor),
+    ])
 
     backButton.isHidden = step == 0
     nextButton.title = step == 3 ? "시작하기" : "계속"
@@ -286,6 +304,8 @@ final class OnboardingViewController: NSViewController {
     stack.alignment = .leading
     stack.spacing = spacing
     stack.distribution = .fill
+    stack.setContentHuggingPriority(.required, for: .vertical)
+    stack.setContentCompressionResistancePriority(.required, for: .vertical)
     for view in views {
       view.translatesAutoresizingMaskIntoConstraints = false
       view.widthAnchor.constraint(lessThanOrEqualTo: stack.widthAnchor).isActive = true

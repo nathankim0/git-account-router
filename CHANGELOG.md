@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 — 2026-09-16
+
+- Anchor every onboarding page at the top of its container instead of stretching it vertically.
+- Replace `NSBox` cards with content-fitting card views so multi-line rows receive their real height.
+- Keep the onboarding panel at a stable preferred width across all four steps.
+- Add debug-only onboarding snapshots for visual regression checks of every step.
+
 ## 0.1.2 — 2026-09-16
 
 - Keep every onboarding label within its card by applying explicit width constraints.
