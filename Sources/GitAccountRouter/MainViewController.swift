@@ -68,7 +68,9 @@ private final class SidebarViewController: NSViewController, NSTableViewDataSour
     if let id = model.selectedProjectID,
       let index = model.projects.firstIndex(where: { $0.id == id })
     {
-      tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+      if tableView.selectedRow != index {
+        tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+      }
     }
     if let active = model.activeAccount {
       accountLabel.stringValue = "GitHub CLI  @\(active.login)"

@@ -16,15 +16,21 @@ final class ProjectDetailViewController: NSViewController {
 
   override func loadView() {
     view = NSView()
+    view.wantsLayer = true
+    view.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
     let scroll = NSScrollView()
     scroll.hasVerticalScroller = true
     scroll.drawsBackground = false
-    let document = NSView()
+    let document = TopAlignedDocumentView()
+    document.translatesAutoresizingMaskIntoConstraints = false
     scroll.documentView = document
 
     contentStack.orientation = .vertical
     contentStack.alignment = .leading
     contentStack.spacing = 20
+    contentStack.distribution = .fill
+    contentStack.setContentHuggingPriority(.required, for: .vertical)
+    contentStack.setContentCompressionResistancePriority(.required, for: .vertical)
     document.addSubview(contentStack)
     contentStack.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(scroll)
@@ -35,7 +41,10 @@ final class ProjectDetailViewController: NSViewController {
       contentStack.trailingAnchor.constraint(equalTo: document.trailingAnchor, constant: -34),
       contentStack.topAnchor.constraint(equalTo: document.topAnchor, constant: 34),
       contentStack.bottomAnchor.constraint(lessThanOrEqualTo: document.bottomAnchor, constant: -34),
-      contentStack.widthAnchor.constraint(equalTo: scroll.contentView.widthAnchor, constant: -68),
+      document.leadingAnchor.constraint(equalTo: scroll.contentView.leadingAnchor),
+      document.topAnchor.constraint(equalTo: scroll.contentView.topAnchor),
+      document.widthAnchor.constraint(equalTo: scroll.contentView.widthAnchor),
+      document.heightAnchor.constraint(greaterThanOrEqualTo: scroll.contentView.heightAnchor),
     ])
   }
 
@@ -106,6 +115,7 @@ final class ProjectDetailViewController: NSViewController {
     )
     let text = vertical([name, path, metadata], spacing: 5)
     let reveal = AppTheme.button("Finder에서 보기", target: self, action: #selector(revealProject))
+    reveal.bezelColor = AppTheme.indigo
     let row = NSStackView(views: [icon, text, NSView(), reveal])
     row.orientation = .horizontal
     row.alignment = .top
@@ -171,7 +181,6 @@ final class ProjectDetailViewController: NSViewController {
 
   private func safetyCard(_ project: RegisteredProject, snapshot: ProjectSnapshot?) -> NSView {
     let card = AppTheme.card()
-    card.fillColor = NSColor.systemGreen.withAlphaComponent(0.07)
     let icon = NSImageView(
       image: NSImage(systemSymbolName: "shield.lefthalf.filled", accessibilityDescription: nil)
         ?? NSImage())
@@ -237,4 +246,8 @@ final class ProjectDetailViewController: NSViewController {
   @objc private func restoreOrigin() {
     if let project { model.restoreOriginalRemote(for: project) }
   }
+}
+
+private final class TopAlignedDocumentView: NSView {
+  override var isFlipped: Bool { true }
 }

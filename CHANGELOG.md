@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 — 2026-09-16
+
+- Prevent recursive sidebar selection notifications from crashing when saved projects load.
+- Keep the main split-view window at its intended size instead of collapsing to the sidebar.
+- Size and top-align the project detail document correctly.
+- Polish detail colors and controls for dark appearance.
+
 ## 0.1.3 — 2026-09-16
 
 - Anchor every onboarding page at the top of its container instead of stretching it vertically.

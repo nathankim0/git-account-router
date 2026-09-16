@@ -107,6 +107,7 @@ final class AppModel {
   }
 
   func selectProject(_ id: UUID?) {
+    guard selectedProjectID != id else { return }
     selectedProjectID = id
     notify()
   }

@@ -36,13 +36,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     false
   }
 
+  func applicationDidBecomeActive(_ notification: Notification) {
+    if window == nil || !window.isVisible {
+      showApplicationWindow()
+    }
+  }
+
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool
   {
     showApplicationWindow()
     return true
   }
 
+  func application(_ app: NSApplication, shouldRestoreApplicationState coder: NSCoder) -> Bool {
+    false
+  }
+
+  func application(_ app: NSApplication, shouldSaveApplicationState coder: NSCoder) -> Bool {
+    false
+  }
+
   private func showInitialInterface() {
+    #if DEBUG
+      if ProcessInfo.processInfo.environment["GAR_SKIP_ONBOARDING"] == "1" {
+        showMainInterface()
+        return
+      }
+    #endif
     if UserDefaults.standard.bool(forKey: "onboardingCompleted") {
       showMainInterface()
     } else {
@@ -70,12 +90,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       )
       window.title = "Git Account Router"
       window.titlebarAppearsTransparent = true
+      window.isRestorable = false
     }
+    controller.preferredContentSize = size
     window.contentViewController = controller
     window.contentMinSize = NSSize(width: 760, height: 520)
+    window.minSize =
+      window.frameRect(
+        forContentRect: NSRect(origin: .zero, size: window.contentMinSize)
+      ).size
     window.setContentSize(size)
     window.center()
     window.makeKeyAndOrderFront(nil)
+    DispatchQueue.main.async { [weak self] in
+      guard let self, self.rootController === controller else { return }
+      self.window.setContentSize(size)
+      self.window.center()
+      self.window.makeKeyAndOrderFront(nil)
+    }
   }
 
   private func showApplicationWindow() {
@@ -119,6 +151,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
       }
     }
+    model.observeChanges { [weak self] in
+      self?.restoreWindowMinimumSizeIfNeeded()
+    }
+  }
+
+  private func restoreWindowMinimumSizeIfNeeded() {
+    guard let window, window.frame.width < 760 || window.frame.height < 520 else { return }
+    let contentSize = rootController?.preferredContentSize ?? NSSize(width: 1120, height: 720)
+    window.setContentSize(contentSize)
+    window.center()
+    window.makeKeyAndOrderFront(nil)
   }
 
   private func configureMenu() {
@@ -142,17 +185,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   private func captureLayoutSnapshotIfRequested() {
-    #if DEBUG
-      guard let path = ProcessInfo.processInfo.environment["GAR_LAYOUT_SNAPSHOT"] else { return }
-      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-        guard let view = self?.window.contentView else { return }
-        view.layoutSubtreeIfNeeded()
-        guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
-        view.cacheDisplay(in: view.bounds, to: bitmap)
-        guard let data = bitmap.representation(using: .png, properties: [:]) else { return }
-        try? data.write(to: URL(fileURLWithPath: path))
-        NSApp.terminate(nil)
-      }
-    #endif
+    guard let path = ProcessInfo.processInfo.environment["GAR_LAYOUT_SNAPSHOT"] else { return }
+    let delay = Double(ProcessInfo.processInfo.environment["GAR_LAYOUT_SNAPSHOT_DELAY"] ?? "1") ?? 1
+    DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+      guard let view = self?.window.contentView else { return }
+      view.layoutSubtreeIfNeeded()
+      guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+      view.cacheDisplay(in: view.bounds, to: bitmap)
+      guard let data = bitmap.representation(using: .png, properties: [:]) else { return }
+      try? data.write(to: URL(fileURLWithPath: path))
+      NSApp.terminate(nil)
+    }
   }
 }
